@@ -1,0 +1,20 @@
+---
+title: "Modelo"
+---
+
+## Pacotes
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tibble)
+library(readxl)
+```
+
+## Dados
+
+```{r}
+df_basica <- read_xlsx(path = "IMOVEIS_TABELABASICA_IBGE.xlsx")
+df_carac <- read_xlsx(path = "IMOVEIS_TABELACARACTERISTICAS_IBGE.xlsx")
+df_renda <- read_xlsx(path = "IMOVEIS_TABELARENDA_IBGE.xlsx")
+```
