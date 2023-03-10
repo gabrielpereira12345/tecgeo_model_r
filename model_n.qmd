@@ -1,11 +1,98 @@
 ---
-title: "model_n"
+title: "Modelo"
+format: 
+  html: 
+    cold-fold: true
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+## Pacotes
 
 ```{r}
-1 + 1
+#| warning: false
+library(dplyr)
+library(ggplot2)
+library(tibble)
+library(readxl)
+library(rsample)
+library(tune)
+library(recipes)
+library(visdat)
+library(purrr)
+library(stringr)
+library(corrr)
+library(tidyr)
+```
+
+## Dados
+
+```{r}
+df_basica <- read_xlsx(path = "IMOVEIS_TABELABASICA_IBGE.xlsx")
+df_renda <- read_xlsx(path = "IMOVEIS_TABELARENDA_IBGE.xlsx")
+```
+
+## Corrigindo tipo de dados
+
+```{r}
+#|echo: true
+#|warning: true
+
+df_basica |> glimpse()
+num_fea_basica <- df_basica |>
+  select_if(is_character) |> 
+  select(quarto:banheiro) |> 
+  colnames()
+
+logical_fea <- df_basica |> 
+  select_if(is_character) |> 
+  select(piscina:spa) |> 
+  colnames()
+
+df_basica[num_fea_basica] <- df_basica[num_fea_basica] |> sapply(as.numeric)
+df_basica[logical_fea_basica] <- df_basica[logical_fea_basica] |> sapply(as.logical)
+
+df_renda |> glimpse()
+num_fea_renda <- df_renda |>
+  select_if(is_character) |> 
+  select(c(quarto:banheiro, total_de_dom_par_impro:dom_par_sem_rendimento_nominal_men_domiciliar_per_capita)) |> 
+  colnames()
+
+df_renda[num_fea_renda] <- sapply(df_renda[num_fea_renda], as.numeric)
+df_renda[logical_fea_basica] <- sapply(df_renda[logical_fea_basica], as.logical)
+```
+
+## Removendo variáveis desnecessárias
+
+```{r}
+df_basica <- df_basica[, which(df_basica |> colnames() |> str_starts("var_", negate = TRUE))]
+df_basica <-  df_basica |> select(-prev)
+df_renda <- df_renda |> select(-prev)
+```
+
+## Valores ausentes
+
+```{r}
+# removendo linhas com valores ausentes
+
+df_basica |> map(\(x) sum(is.na(x)))
+df_basica <- df_basica |> drop_na()
+df_renda |> map(\(x) sum(is.na(x)))
+df_renda <-  df_renda |> drop_na()
+```
+
+## Correlação entre variáveis
+
+```{r}
+
+library(dplyr)
+library(corrr)
+
+corr_matrix <- function(banco){
+  banco |> 
+    select_if(is.numeric) |> 
+    correlate(diagonal = 1) 
+  }
+
+df_basica |> corr_matrix()
+df_basica |> glimpse()
+df_renda |> glimpse()
 ```
